@@ -45,4 +45,3 @@ If you’re using ATTRACT, check scripts/prep.sh to generate the required files 
    - `hippo.rank`: Structure: `#rank #pose_id`. It is a list of poses, ranked according to HIPPO.
 
 Feel free to explore and use HIPPO for your protein-ssRNA fragment-based docking needs!
-# hippo
