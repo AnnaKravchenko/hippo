@@ -19,6 +19,7 @@ The scripts used for building HIPPO are available at [sjdv1982/histograms](https
 Here's an example of how to score poses of the fragment with HIPPO:
 
 1. **Requirements:**
+   - Define the HIPPO environment variable for the current terminal session with export HIPPO=/my_path/hippo or define it permanently by adding that line in your /home/.bashrc
    - A folder titled `template-scoring` with the following files:
      - `proteinr.pdb`: Protein in CG. Can be derived from all-atom using `$ATTRATTOOLS/reduce.py`.
      - `nstruc/${motif}.nstruc`: Number of poses to score.
