@@ -55,3 +55,4 @@ while 1:
     maxstruc = int(maxstruc * 1.2 + 0.99999) #grow allcoor with 20%
     allcoor.resize(maxstruc,3*nr_dump_atoms)
 allcoor = allcoor.reshape((len(allcoor), -1, 3))
+numpy.save(outfile, allcoor[:nstruc])
