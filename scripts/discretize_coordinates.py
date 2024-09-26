@@ -96,7 +96,7 @@ def main():
     outputfile_2 = output_pattern + "-indices.npy"
     for outputfile in (outputfile_1, outputfile_2):
         if os.path.exists(outputfile):
-            print("{} already exists, nothing to do".format(outputfile))
+            #print("{} already exists, nothing to do".format(outputfile))
             sys.exit(0)
 
     output_pattern = os.path.join(output_dir, "discrete-{}-{}".format(ligand_atomtype, rankchunk_checksum))

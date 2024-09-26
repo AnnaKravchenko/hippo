@@ -19,8 +19,9 @@ usage_long() {
     echo "Mandatory positional arguments:"
     echo "  - protein.pdb is a single protein structure (to be expanded to an ensemble option)"
     echo "  - boundfrag.list that lists bound fragments or entire RNA, e.g. '1 GUU; 2 UUU; etc.' or '1 GUUUGUU' "
-    echo "    For each fragment, a correspoondong file with the docking models, e.g. 1-GUU.pdb or 1-GUUUGUU.pdb or .dat file GUU-e7.dat (only for trinucleotides, only if -a is specified) should be present. "
-    echo "    All docking models have to be positioned with respect to given protein structure!"
+    echo "    For each fragment, a correspoondong file with the docking models:"
+    echo "    frag1r.pdb in default mode or motif-e7.dat in attract mode (if flag -a used)."
+    echo "    Currently, all docking models have to be positioned with respect to given protein structure, regardless of a mode!"
     echo "  - poses_per_potential is the number of poses to pool (per 1 potential)"
     echo "  - sele_top is the number of poses to keep at the end of the scoring"
     echo ""
@@ -28,7 +29,9 @@ usage_long() {
     echo "  -t is a path to folder where 'template-scoring' with required input for HIPPO - will be created; otherwise it will be in a current folder"
     echo "  -o is a path to folder where an output foldew will be created; otherwise it will be in a current folder"
     echo "  -n is a name that will be used to create an output folded, e.g. 1B7F to get output folder titled 1B7F-1-GUU; otherwise it will be titled HIPPO-1-GUU"
-    echo "  -a is a flag that will make HIPPO score poses written as rotations/trainslations in .dat files "
+    echo "  -a is a flag for 'attract mode', i.e. HIPPO will score poses written as rotations/trainslations in .dat files and not in .pdb files"
+    echo "  Mind that in attract mode HIPPO assumes that ATTRACT is installed, and fragment with same motif are docked just once, while default mode will look for"
+    echo "  frag_r.pdb for each fragment regardelss of motif."
     echo "  -c is a flag that will remove 'template-scoring', including sizeable coordinates files"
     #echo "  -l is a flag that will look for .lrmsd files to access "
     exit 1
@@ -55,7 +58,8 @@ output_path=$curr_dir
 out_name=HIPPO
 attract=flase
 clean=false
-lrmsd=false 
+# #todo lrmsd analysis outside of attract
+#lrmsd=false 
 
 shift 4
 
@@ -79,10 +83,10 @@ while getopts ":o:t:n:acl" opt; do
             clean=true
             echo "Directory 'template-scoring' will be deleted"
             ;;
-        l )
-            lrmsd=true
-            echo "Scoring will be accessed based on per-model lrmsd."
-            ;;
+        # l )
+        #     lrmsd=true
+        #     echo "Scoring will be accessed based on per-model lrmsd."
+        #     ;;
         \? )
             echo "Invalid option: -$OPTARG" >&2
             usage_short
@@ -130,23 +134,25 @@ while IFS=' ' read -r frag motif; do
         # do stuff 
         fi 
     else 
-        if [[ ! -f "${frag}-${motif}.pdb" ]]; then
-        echo "Error: File ${frag}-${motif}.pdb not found"
+        if [[ ! -f "frag${frag}r.pdb" ]]; then
+        echo "Error: File frag${frag}r.pdb not found"
         rm -r $template_path
         exit 
         else 
         # count models 
-        awk '/ENDMDL/ {count++} END {print count}' "${frag}-${motif}.pdb" > "${template_path}/nstruc/${frag}-${motif}.nstruc"
+        awk '/ENDMDL/ {count++} END {print count}' "frag${frag}r.pdb" > "${template_path}/nstruc/${frag}-${motif}.nstruc"
         # make coordinates
-        python3 $HIPPO/scripts/get_coordinates_stand_alone.py ${frag}-${motif}.pdb ${frag}-${motif} $template_path/coordinates
+        python3 $HIPPO/scripts/get_coordinates_stand_alone.py "frag${frag}r.pdb" "${frag}-${motif}" "$template_path/coordinates"
         # make cache
         cd $template_path/coordinates
-        bash $HIPPO/scripts/discretize-all.sh
+        #bash $HIPPO/scripts/discretize-all.sh
+        bash $HIPPO/scripts/discretize-given.sh $frag $motif
         cd $curr_dir # just in case. Have to test if needed 
         # in this case, score.sh is redundant. Just call functions from here"
-        echo "scoring ${frag}-${motif}"
+        echo "scoring fragment ${frag}"
         bash $HIPPO/scripts/score-with-histo.sh "${out_name}" "${frag}" "${motif}" "${template_path}" "${output_path}"
         bash $HIPPO/scripts/pool_poses.sh "${output_path}/${out_name}-${frag}-${motif}" "${poses_per_potential}" "${sele_top}"
+        echo "*******************************************"
         fi 
     fi 
 done < "$boundfrag"
