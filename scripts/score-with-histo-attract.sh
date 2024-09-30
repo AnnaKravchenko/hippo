@@ -16,15 +16,16 @@ cat $HIPPO/HIPPO | while read potential ; do
 	nstruc=`cat $template/nstruc/${m}.nstruc`
 	cachedir=$template/coordinates/cache-${m}
 
-	outdir=$out/$c-$f-$m
+	outdir=$out/$c-$m
 	mkdir -p $outdir
 
 	#echo "histo $potential"
 	
-	python3 -u $HIPPO/scripts/score-with-all-histograms-discrete.py $prot $m $nstruc $HIPPO/tools/$potential/rebased/ $cachedir > $outdir/$c-$f-$m-$potential.score 2> $outdir/$potential.log
-	python3 $HIPPO/scripts/rank-all-poses.py $outdir/$c-$f-$m-$potential.score $f $template > $outdir/$potential.rank-all
+	python3 -u $HIPPO/scripts/score-with-all-histograms-discrete.py $prot $m $nstruc $HIPPO/tools/$potential/rebased/ $cachedir > $outdir/$c-$m-$potential.score 2> $outdir/$potential.log
+	#python3 $HIPPO/scripts/rank-all-poses.py $outdir/$c-$m-$potential.score $f $template > $outdir/$potential.rank-all
+	python3 $HIPPO/scripts/rank-all-poses.py $outdir/$c-$m-$potential.score  > $outdir/$potential.rank-all
 	cd $outdir/
 	rm -f $c-$f-$m-$potential.score
-#	python $HIPPO/scripts/analyze-score.py $outdir/$potential.rank-all > $outdir/$potential.stat
+#	python3 $HIPPO/scripts/analyze-score.py $outdir/$potential.rank-all > $outdir/$potential.stat
 done
 

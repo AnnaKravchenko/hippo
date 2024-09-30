@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -i
+source ~/tools/miniforge3/etc/profile.d/conda.sh
 
 # This script:
 # 1. deals with user input 
@@ -83,10 +84,10 @@ while getopts ":o:t:n:acl" opt; do
             clean=true
             echo "Directory 'template-scoring' will be deleted"
             ;;
-        # l )
-        #     lrmsd=true
-        #     echo "Scoring will be accessed based on per-model lrmsd."
-        #     ;;
+        l )
+            lrmsd=true
+            echo "Scoring will be accessed based on per-model lrmsd."
+            ;;
         \? )
             echo "Invalid option: -$OPTARG" >&2
             usage_short
@@ -121,22 +122,12 @@ cat $protein_pdb > $template_path/proteinr.pdb
 # check that models exist, if yes - count them, then make coordinates and cache 
 # in attract mode assume single .dat per motif
 # otherwise assume single pdb per fragment regardless of the motif
-while IFS=' ' read -r frag motif; do
-    if [[ "$attract" == true ]] ; then
-        if [[ ! -f "${motif}-e7.dat" ]]; then
-        echo "Error: File ${motif}-e7.dat not found"
-        rm -r $template_path
-        exit 
-        else 
-        echo "check that attract is installed"
-        # discretize also with attract
-        #bash $HIPPO/scripts/score-with-histo-attract.sh
-        # do stuff 
-        fi 
-    else 
+
+if [[ "$attract" == false ]] ; then
+    while IFS=' ' read -r frag motif; do
         if [[ ! -f "frag${frag}r.pdb" ]]; then
         echo "Error: File frag${frag}r.pdb not found"
-        rm -r $template_path
+        rm -r "${template_path}"
         exit 
         else 
         # count models 
@@ -146,20 +137,65 @@ while IFS=' ' read -r frag motif; do
         # make cache
         cd $template_path/coordinates
         #bash $HIPPO/scripts/discretize-all.sh
-        bash $HIPPO/scripts/discretize-given.sh $frag $motif
+        bash $HIPPO/scripts/discretize-given.sh "${frag}" "${motif}" "${attract}"
         cd $curr_dir # just in case. Have to test if needed 
         # in this case, score.sh is redundant. Just call functions from here"
         echo "scoring fragment ${frag}"
         bash $HIPPO/scripts/score-with-histo.sh "${out_name}" "${frag}" "${motif}" "${template_path}" "${output_path}"
         bash $HIPPO/scripts/pool_poses.sh "${output_path}/${out_name}-${frag}-${motif}" "${poses_per_potential}" "${sele_top}"
         echo "*******************************************"
-        fi 
-    fi 
+        fi  
 done < "$boundfrag"
 
-if [[ "$clean" == true ]] ; then 
-    rm -r $template_path
+else 
+    if [[ -f "motif.list" ]]; then
+        while IFS=' ' read -r motif; do
+        # coordinates for $motif-e7.dat
+        conda activate attract
+        python3 $HIPPO/scripts/g-at-c.py `head -1 $LIBRARY/${motif}-clust1.0r.list`  ${motif}-e7.dat $LIBRARY/${motif}-clust1.0r.list ${template_path}/coordinates/${motif}
+        conda activate hippo
+        # cache coordinates/motif-*.npy 
+        cd $template_path/coordinates
+        bash $HIPPO/scripts/discretize-given.sh "no-frag-required" $motif "$attract"
+        cd $curr_dir # this required! 
+        tail "${motif}-e7.dat" | awk '/#[0-9]+/ {last=substr($0, 2)} END {print last}' > "$template_path/nstruc/${motif}.nstruc"
+        echo "scoring $motif"
+        bash $HIPPO/scripts/score-with-histo-attract.sh  "${out_name}" "${frag}" "${motif}" "${template_path}" "${output_path}"
+        if [[ "$lrmsd" == false ]]; then 
+            bash $HIPPO/scripts/pool_poses.sh "${output_path}/${out_name}-${motif}" "${poses_per_potential}" "${sele_top}"
+        else 
+            # move from per-motif to per-fragment
+            grep ${motif} ${boundfrag} | while read -r frag motif; do 
+                cp -r "${output_path}/${out_name}-${motif}" "${output_path}/${out_name}-${frag}-${motif}"
+                cd "${output_path}/${out_name}-${frag}-${motif}"
+                for i in *.rank-all; do
+                    {
+                        echo "#pose_id #histo_rank #lrmsd"
+                        paste <(tail -n +2 "$i") <(awk '{print $2}' "$curr_dir/frag${frag}.lrmsd")
+                    } > "$i.tmp" && mv "$i.tmp" "$i"
+                done
+                # here are some commeted lines in this script. could be nice to uncommet them in this case,
+                # but keep them comment in the previous case:
+                bash $HIPPO/scripts/pool_poses.sh "${output_path}/${out_name}-${frag}-${motif}" "${poses_per_potential}" "${sele_top}"
+                for i in *.rank-all; do
+                    name="${i%.rank-all}"
+                    # replace hardcoded segments 1.000 to 20.000.000 with % of all poses as in nstruc
+                    python3 "$HIPPO/scripts/analyze-score.py" "$name.rank-all" > "$name.stat"
+                done
+                cd $curr_dir   
+            done 
+            rm -r "${output_path}/${out_name}-${motif}"
+        fi 
+    done < "motif.list"  
+    else 
+    echo "Error: File ${curr_dir}/motif.list not found"
+    rm -r "${template_path}"
+    exit     
+    fi 
 fi 
 
+if [[ "$clean" == true ]] ; then 
+    rm -r "${template_path}"
+fi 
 
-
+# perform lrmsd for default mode as well? 

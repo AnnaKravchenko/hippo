@@ -8,7 +8,7 @@ set -u -e
 scripts=$HIPPO/scripts
 histo_dir=$HIPPO/tools/fake-histo/
 
- for i in *.npy; do
+for i in *.npy; do
     frag=$(echo "$i" | awk -F'[-.]' '{print $1}')
     motif=$(echo "$i" | awk -F'[-.]' '{print $2}')
     atomtype=$(echo "$i" | awk -F'[-.]' '{print $3}')

@@ -12,6 +12,6 @@ for atomtype in np.unique(atomtypes):
     indices = np.where(atomtypes == atomtype)[0] + 1
     inds = " ".join([str(i) for i in indices])
     outfile = output_pattern + "-" + str(atomtype) + ".npy"
-    cmd = "python3 $HIPPO/scripts/dump_coordinates.py %s %s %s %d %s --ens 2 %s" % (datfile, pdbfile, outfile, len(indices), inds, liblist)
-    print(cmd)
+    cmd = "python2 $ATTRACTDIR/dump_coordinates.py %s %s %s %d %s --ens 2 %s" % (datfile, pdbfile, outfile, len(indices), inds, liblist)
+    print(f'dump corrdinates {datfile}, bead {atomtype}' )
     os.system(cmd)

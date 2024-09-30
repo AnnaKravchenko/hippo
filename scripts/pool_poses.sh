@@ -28,7 +28,7 @@ if [ $len -ge $global_tr ] ; then
 
         head -n $global_tr $wdir/pooled.clean-sorted > $wdir/all.topC
 	echo '#rank #pose_id' > $wdir/hippo.rank
-	awk '{print NR,"\t"$1}'  $wdir/all.topC >> $wdir/hippo.rank
+	awk '{print NR,$1}'  $wdir/all.topC >> $wdir/hippo.rank
 
         #awk '$3<5' $wdir/all.topC > $wdir/nns.topC
         #wc -l < $wdir/nns.topC > $wdir/topC.nns
