@@ -1,48 +1,54 @@
-# HIPPO (Histogram-based pseudo-potential): Scoring Function for Protein-ssRNA Docking
+# HIPPO (Histogram-based Pseudo-potential): Scoring Function for Protein-ssRNA Docking
 
-HIPPO is a scoring function designed for the fragment-based docking of protein-ssRNA complexes, specifically tailored to the ATTRACT coarse-grained (CG) representation. This repository contains the scripts used to build and utilize HIPPO.
+HIPPO is tailored for fragment-based docking poses in the ATTRACT coarse-grained representation. This means that HIPPO requires a single protein structure against which all RNA models are scored. HIPPO was developed and tested on RNA fragments—specifically, trinucleotides. It can rank RNA chains/fragments of any length; however, it has not yet been tested for anything other than trinucleotides.
 
-## Prerequisites
+## Requirements
 
-Before using HIPPO, ensure you have the following dependencies installed:
-- Python 3
-- NumPy
-- Pandas
-- Parallel
+To run HIPPO, you need an environment with:
+* Python 3
+* NumPy
+* Pandas
+* Parallel
 
-## Scripts
+Add these to your `attract` environment, or use `hippo.yml` to create a new `hippo` environment. Then export the path to HIPPO with `HIPPO=/path/to/hippo`.
 
-The scripts used for building HIPPO are available at [sjdv1982/histograms](https://github.com/sjdv1982/histograms/tree/main). They are customized for the ATTRACT docking engine and docking poses in ATTRACT CG representation.
+## Execution
 
-## Example
+To run HIPPO, you need to prepare input files and run `bash $HIPPO/scripts/hippo.sh` from a folder with those files. 
 
-Here's an example of how to score poses of the fragment with HIPPO:
+There are two modes to run HIPPO (see `bash $HIPPO/scripts/hippo.sh --help`). One mode processes the output of fragment-based docking from ATTRACT, where all RNA poses are stored in a .dat file. An installation of ATTRACT is required for this mode. The second mode allows you to process RNA poses stored in a PDB file, which does not require an installation of ATTRACT.
 
-1. **Requirements:**
-   - Define the HIPPO environment variable for the current terminal session with `export HIPPO=/my_path/hippo` or define it permanently by adding that line in your /home/.bashrc
-   - A folder titled `template-scoring` with the following files:
-     - `proteinr.pdb`: Protein in CG. Can be derived from all-atom using `$ATTRATTOOLS/reduce.py`.
-     - `nstruc/${motif}.nstruc`: Number of poses to score.
-     - `coordinates/${motif}-${bead}.npy`: One file per each type of RNA beads in ATTRACT CG representation, present in at least one docking pose. Contains the coordinates of the corresponding beads within each pose. An example of the set of the docking poses (pdb), from which these foles have been derived are provided extra/ 
+To prepare a coarse-grained protein structure, a list of bound fragments and motifs, and either a list of PDB models of RNA or a .dat file with rotations/translations:
+* To coarse-grain a PDB file, use `$HIPPO/tools/reduce.py` with a PDB file as an argument. Use the flag `--rna` for RNA. Please note that `reduce.py` cannot handle PDB files with multiple models.
+* The `boundfrag.list` should look as follows:
+    ```
+    1 AAA
+    2 AAC
+    3 ACG
+    4 CGU
+    ```
+  Any length or number of fragments is acceptable.
+* The `motif.list` should look as follows:
+    ```
+    AAA
+    AAC
+    ACG
+    CGU
+    ```
+* If you're using a PDB file to store models of RNA/fragments, make sure they are named `frag${frag}r.pdb`, where `$frag` corresponds to the number of a given fragment. Please ensure that RNA models are separated by `ENDMDL` and that all your RNA/fragment models are oriented with respect to a **SINGLE** protein structure. Otherwise, the resulting ranking will not make any sense.
+* If you're using .dat files to store models of RNA/fragments, make sure they are named `${motif}-e7.dat`.
 
-If you’re using ATTRACT, check scripts/prep.sh to generate the required files automatically. 
+## Quick Theoretical Part
 
-2. **Scoring Process:**
-   - Clone this repository.
-   - Export variable `HIPPO` (e.g., `export HIPPO=”my_path/HIPPOv1”`).
-   - Create `template-scoring/` with the required fields.
-   - Run `bash $HIPPO/scripts/score.sh $c $f $m $input $output $to_pool $to_keep`, where:
-     - `$c`: Name of the complex (used only in the folder name), e.g., `6JVX`.
-     - `$f`: Number of the docked fragment (used only in the folder name), e.g., `3`.
-     - `$m`: Motif of the fragment, e.g., `GUG`.
-     - `$input`: Path to where `template_scoring/` is.
-     - `$output`: Location where the output folder named `$complex-$fragment_number-$motif` will be generated.
-     - `$to_pool`: Number of poses to take from each scoring list to pool together. We recommend pooling ~10% of all docking poses to score.
-     - `$to_keep`: Number of pooled poses to keep. We recommend keeping 20% of all docking poses.
+HIPPO works by scoring bead-bead contacts, using four distinct sets of pseudo-potentials. You can find out more in [this paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10964654/). 
 
-3. **Generated Files:**
-   - `X.rank-all`: Structure: `#pose_id #histo_rank`. It is a list of poses with structure ranked by the potential X.
-   - `all.top`: Structure: `#pose_id #histo_rank $histo_name`. It is a list of top-ranked poses, given by all 4 potentials, with each pose mapped to the potential.
-   - `hippo.rank`: Structure: `#rank #pose_id`. It is a list of poses, ranked according to HIPPO.
+Practically speaking, HIPPO will score a list of input RNA poses four times. It will then take the number of top-ranked poses specified by the user (`poses_per_potential`) from each of the four lists of scored poses, pooling these poses together and removing redundancies. Finally, a specified number of poses (`sele_top`) will be returned in the `hippo.rank` file.
 
-Feel free to explore and use HIPPO for your protein-ssRNA fragment-based docking needs!
+Please note that raw histofram score values are not representative of any kind of energy.
+
+## Re-training HIPPO
+
+The scripts used for building HIPPO are available at [sjdv1982/histograms](https://github.com/sjdv1982/histograms/tree/main). They are customized for the ATTRACT docking engine and docking poses in ATTRACT CG representation and can be used to train HIPPO-like scoring function on any other docking benchmark, e.g. DNAs or peptides.
+
+Feel free to use HIPPO for your docking projects, and do not hesitate to open a GitHub issue if you have any questions!
+Happy docking:)
