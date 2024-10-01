@@ -1,5 +1,4 @@
 #!/bin/bash -i
-source ~/tools/miniforge3/etc/profile.d/conda.sh
 
 # This script:
 # 1. deals with user input 
@@ -151,6 +150,7 @@ else
     if [[ -f "motif.list" ]]; then
         while IFS=' ' read -r motif; do
         # coordinates for $motif-e7.dat
+        source ~/tools/miniforge3/etc/profile.d/conda.sh
         conda activate attract
         python3 $HIPPO/scripts/g-at-c.py `head -1 $LIBRARY/${motif}-clust1.0r.list`  ${motif}-e7.dat $LIBRARY/${motif}-clust1.0r.list ${template_path}/coordinates/${motif}
         conda activate hippo

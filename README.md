@@ -10,7 +10,8 @@ To run HIPPO, you need an environment with:
 * Pandas
 * Parallel
 
-Add these to your `attract` environment, or use `hippo.yml` to create a new `hippo` environment. Then export the path to HIPPO with `HIPPO=/path/to/hippo`.
+Use `hippo.yml` to create a new `hippo` environment. Then export the path to HIPPO with `HIPPO=/path/to/hippo`.
+If you'd like to use HIPPO on the output of ATTRACT - make sure `source` in line 153 of `scripts/hippo.sh` points to a correct location. 
 
 ## Execution
 
