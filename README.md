@@ -44,7 +44,7 @@ HIPPO works by scoring bead-bead contacts, using four distinct sets of pseudo-po
 
 Practically speaking, HIPPO will score a list of input RNA poses four times. It will then take the number of top-ranked poses specified by the user (`poses_per_potential`) from each of the four lists of scored poses, pooling these poses together and removing redundancies. Finally, a specified number of poses (`sele_top`) will be returned in the `hippo.rank` file.
 
-Please note that raw histofram score values are not representative of any kind of energy.
+Please note that raw histogram score values are not representative of any kind of energy.
 
 ## Re-training HIPPO
 
