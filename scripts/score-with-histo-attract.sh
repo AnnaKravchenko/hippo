@@ -21,11 +21,10 @@ cat $HIPPO/HIPPO | while read potential ; do
 
 	#echo "histo $potential"
 	
-	python3 -u $HIPPO/scripts/score-with-all-histograms-discrete.py $prot $m $nstruc $HIPPO/tools/$potential/rebased/ $cachedir > $outdir/$c-$m-$potential.score 2> $outdir/$potential.log
-	#python3 $HIPPO/scripts/rank-all-poses.py $outdir/$c-$m-$potential.score $f $template > $outdir/$potential.rank-all
-	python3 $HIPPO/scripts/rank-all-poses.py $outdir/$c-$m-$potential.score  > $outdir/$potential.rank-all
+	python3 -u $HIPPO/scripts/score-with-all-histograms-discrete.py $prot $m $nstruc $HIPPO/tools/$potential/rebased/ $cachedir > $outdir/$potential.score 2> $outdir/$potential.log
+	python3 $HIPPO/scripts/rank-all-poses.py $outdir/$potential.score  > $outdir/$potential.rank-all
 	cd $outdir/
-	rm -f $c-$f-$m-$potential.score
+	#rm -f $$potential.score
 #	python3 $HIPPO/scripts/analyze-score.py $outdir/$potential.rank-all > $outdir/$potential.stat
 done
 

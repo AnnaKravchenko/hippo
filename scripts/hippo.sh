@@ -18,7 +18,7 @@ usage_long() {
     echo "Usage: hippo.sh protein.pdb boundfrag.list poses_per_potential sele_top [-t /path/to/template/] [-o /path/to/output] [-n name] [-a]"
     echo ""
     echo "Mandatory positional arguments:"
-    echo "  - protein.pdb is a single protein structure (to be expanded to an ensemble option)"
+    echo "  - protein.pdb is a single protein structure"
     echo "  - boundfrag.list that lists bound fragments or entire RNA, e.g. '1 GUU; 2 UUU; etc.' or '1 GUUUGUU' "
     echo "    For each fragment, a correspoondong file with the docking models:"
     echo "    frag1r.pdb in default mode or motif-e7.dat in attract mode (if flag -a used)."
@@ -179,7 +179,7 @@ else
                 bash $HIPPO/scripts/pool_poses.sh "${output_path}/${out_name}-${frag}-${motif}" "${poses_per_potential}" "${sele_top}"
                 for i in *.rank-all; do
                     name="${i%.rank-all}"
-                    # replace hardcoded segments 1.000 to 20.000.000 with % of all poses as in nstruc
+                    # could be nice to replace hardcoded segments 1.000 to 20.000.000 with % of all poses as in nstruc
                     python3 "$HIPPO/scripts/analyze-score.py" "$name.rank-all" > "$name.stat"
                 done
                 cd $curr_dir   
