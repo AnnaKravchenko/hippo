@@ -5,7 +5,7 @@ scorefile=sys.argv[1]
 
 scores=np.loadtxt(scorefile,np.float32)
 ranks= (-scores).argsort().argsort()
-print("#pose_id #HIPPO_rank")
+print("#pose_id #histo_rank")
 for line in range(len(ranks)):
 	print(line + 1, ranks[line]+1) 
 

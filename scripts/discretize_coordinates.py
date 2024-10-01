@@ -56,7 +56,7 @@ def discretize_coordinates(coordinates, rank_chunks):
         digit_coors[:, 1] = (uniq >> 10) & bits10
         digit_coors[:, 2] = uniq & bits10
         digit_index = digit_index.reshape(digit_hash.shape).astype(np.uint32)
-        print("Number of atoms: {}, unique on grid: {}".format(chunk.shape[0] * chunk.shape[1], len(uniq)), file=sys.stderr)
+        #print("Number of atoms: {}, unique on grid: {}".format(chunk.shape[0] * chunk.shape[1], len(uniq)), file=sys.stderr)
         digit_indices["index"][rank_start:rank_end] = np.moveaxis(digit_index, 0, -1)
         weights = np.round(weights * 255).astype(np.uint8)
         digit_indices["weight"][rank_start:rank_end] = np.moveaxis(weights, 0, -1)

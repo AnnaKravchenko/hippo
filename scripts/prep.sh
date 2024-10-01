@@ -1,36 +1,26 @@
 #!/bin/bash 
 
-# if you're using ATTRACT locally, you can generate required folder strcure from $m-e7.dat file.
-# run this script with $1 pointing to the folder with:
-# motif-e7.dat
-# motif.list 
-# boundfrag.list 
-# nalib (fragmnet library)
-# (optional) frag${f}.lrmsd 
+# if you're using ATTRACT locally, you can generate required 
+# folder strcure from $m-e7.dat file using $HIPPO/scripts/prep_attract.sh 
+# if not - use this script  
 
-wdir=$1 #path to folder with files like $motit-e7.dat, frag$f.lrmsd etc.
+# this script requires the following arguments:
+# 1. A path to the folder where `template-scoring` will be generated 
+# 2. A pdb with an ensemble of coarse-grained models to score. 
+template_dir=$1/template-scoring/
+rna_models=$2
 
-mkdir -p $wdir/template-scoring/rmsd
-mkdir -p $wdir/template-scoring/coordinates
-mkdir -p $wdir/template-scoring/nstruc
+mkdir -p ${template_dir}/coordinates
+#ln -s $2 $template_dir/proteinr.pdb
 
-ln -s $wdir/proteinr.pdb $wdir/template-scoring/.
+mkdir -p ${template_dir}/nstruc
+echo `grep "ENDMDL" $rna_models | wc -l | tr -d " \t"` > ${template_dir}/nstruc/RNA.nstruc
 
-cat $wdir/boundfrag.list | while read line; do
-	f=$(echo $line | cut -f1 -d' ')
-	m=$(echo $line | cut -f2 -d' ')
-	if [ -f $wdir/frag$f.lrmsd ] ; then 
-	ln -s $wdir/frag$f.lrmsd $wdir/template-scoring/rmsd/. ; 
-	wc -l < $wdir/frag$f.lrmsd >  $wdir/template-scoring/nstruc/$m.nstruc;
-	fi ; else echo "please create $wdir/template-scoring/nstruc/$m.nstruc manually"
-done
-
-#echo "making cordinates..."
-
-mkdir $wdir/coordinates
-bash $HIPPO/template-scripts/g-at-c.sh $wdir motif.list
-ln -s $wdir/coordinates/*npy $wdir/template-scoring/coordinates
+echo "making cordinates..."
+python $HIPPO/scripts/get_coordinates_stand_alone.py $rna_models
+mv *npy ${template_dir}/coordinates
+cd ${template_dir}/coordinates
 echo "making cordinates cache..."
-cd $wdir/template-scoring/coordinates
-bash $HIPPO/scripts/discretize-all.sh 2>tmp
-rm tmp
+bash $HIPPO/scripts/discretize-all-attract.sh 2>/dev/null
+
+#        wc -l < $wdir/frag$f.lrmsd >  $wdir/template-scoring/nstruc/$m.nstruc

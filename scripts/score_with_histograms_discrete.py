@@ -9,6 +9,31 @@ from hashlib import sha3_256
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from discretize_coordinates import discretize_coordinates
 
+
+# def load_receptor_coordinates(receptor_file):
+#     all_receptor_coordinates = []
+#     current_model = {}
+#     for l in open(receptor_file):
+#         if l.startswith("MODEL"):
+#             current_model = {}
+#         elif l.startswith("ENDMDL"):
+#             for k in current_model.keys():
+#                 current_model[k] = np.array(current_model[k])
+#             all_receptor_coordinates.append(current_model)
+#         elif l.startswith("ATOM"):
+#             atomtype = int(l[57:59])
+#             if atomtype == 99:
+#                 continue
+#             rec_coor = current_model.get(atomtype)
+#             if rec_coor is None:
+#                 rec_coor = []
+#                 current_model[atomtype] = rec_coor
+#             x, y, z = float(l[30:38]), float(l[38:46]), float(l[46:54])
+#             rec_coor.append((x, y, z))
+#     if len(all_receptor_coordinates) == 0:
+#         raise Exception("Protien coordinates not found! Make sure your file contains 'MODEL' and 'ENDMDL' ")
+#     return all_receptor_coordinates
+
 def load_receptor_coordinates(receptor_file):
     all_receptor_coordinates = {}
     for l in open(receptor_file):
@@ -102,7 +127,8 @@ def calc_score(all_receptor_coordinates, ligand_coordinates, ligand_atomtype, hi
             distance_thresholds = np.array([0] + [v[0] for v in distance_bins])
             rank_potential = np.array([v[1] for v in distance_bins] + [0])
 
-            chunk_scores = np.zeros(len(chunk))
+            chunk_scores = np.zeros(len(chunk)) # chunk is rna coords, but in a strange way and plopped all together 
+
             for coor in receptor_coordinates:
                 dist = np.linalg.norm(chunk - coor, axis=1)
                 bin_dist = np.digitize(dist, distance_thresholds) - 1
@@ -112,6 +138,7 @@ def calc_score(all_receptor_coordinates, ligand_coordinates, ligand_atomtype, hi
             curr_scores = (curr_scores_vec/255 * curr_weights).reshape(len(curr_indices), -1).sum(axis=1)
             scores[low_rank:high_rank] += curr_scores
     return scores
+
 
 if __name__ == "__main__":
     receptor_file = sys.argv[1] # e.g. 1A9N/receptor-reduced.pdb
@@ -137,5 +164,6 @@ if __name__ == "__main__":
     histograms = load_histograms(histogram_files, len(ligand_coordinates))
 
     scores = calc_score(all_receptor_coordinates, ligand_coordinates, ligand_atomtype, histograms, cache_dir)
+    print('defaul function')
     for score in scores:
         print("%.6f" % score)
