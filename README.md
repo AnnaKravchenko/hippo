@@ -46,9 +46,11 @@ Practically speaking, HIPPO will score a list of input RNA poses four times. It 
 
 Please note that raw histogram score values are not representative of any kind of energy.
 
-## Re-training HIPPO
+#### Re-training HIPPO
 
-The scripts used for building HIPPO are available at [sjdv1982/histograms](https://github.com/sjdv1982/histograms/tree/main). They are customized for the ATTRACT docking engine and docking poses in ATTRACT CG representation and can be used to train HIPPO-like scoring function on any other docking benchmark, e.g. DNAs or peptides.
+The scripts used for building HIPPO are available at [sjdv1982/histograms](https://github.com/sjdv1982/histograms/tree/main). They are customized for the ATTRACT docking engine and docking poses in ATTRACT CG representation and can be used to train HIPPO-like scoring function on any other docking benchmark, e.g. DNA.
+
+***
 
 Feel free to use HIPPO for your docking projects, and do not hesitate to open a GitHub issue if you have any questions!
 Happy docking:)
