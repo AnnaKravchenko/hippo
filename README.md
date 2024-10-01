@@ -1,6 +1,6 @@
 # HIPPO (Histogram-based Pseudo-potential): Scoring Function for Protein-ssRNA Docking
 
-HIPPO is tailored for fragment-based docking poses in the ATTRACT coarse-grained representation. This means that HIPPO requires a single protein structure against which all RNA models are scored. HIPPO was developed and tested on RNA fragments—specifically, trinucleotides. It can rank RNA chains/fragments of any length; however, it has not yet been tested for anything other than trinucleotides.
+HIPPO is tailored for fragment-based docking poses in the ATTRACT coarse-grained representation, generated with [ATTRACT docking engine](https://github.com/sjdv1982/attract/blob/master/INSTALLATION.txt). This means that HIPPO requires a single protein structure against which all RNA models are scored. HIPPO was developed and tested on RNA fragments—specifically, trinucleotides. It can rank RNA chains/fragments of any length; however, it has not yet been tested for anything other than trinucleotides.
 
 ## Requirements
 
